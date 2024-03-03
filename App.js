@@ -1,20 +1,102 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, ImageBackground, Image, Animated } from "react-native";
+import Login from "./components/login";
+import chatPage from "./components/assets/chatPage.jpg";
+import Signup from "./components/signup";
+import loading from "./components/assets/FloatingBot.gif";
+import ChatPage from "./components/chatPage";
+import { useState, useEffect } from "react";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function App() {
+  //axios
+  axios.defaults.baseURL = "http://192.168.1.42:5000";
+  axios.defaults.withCredentials = true;
+  axios.defaults.headers.post["Content-Type"] = "application/json";
+  axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
+
+  //state variables
+  const [login, setLogin] = useState(true);
+  const [isChatPage, setIsChatPage] = useState(false);
+  const [run, setRun] = useState(true);
+  const [user, setUser] = useState({}); //{username, email, profilePicture, contacts:[{contact:{username, email, profilePicture}}]}
+
+  //animations
+  const opacity = new Animated.Value(0);
+
+  const checkAuth = async () => {
+    const token = await AsyncStorage.getItem("token");
+    if (!token) {
+      setRun(false);
+      return;
+    }
+    try{
+      const res = await axios.post("/user/checkAuth", { token });
+      if (res.data.ok) {
+        setUser(res.data.data);
+        setIsChatPage(true);
+        setRun(false);
+        
+        return;
+      }
+      if (!res.data.ok) {
+        setRun(false);
+        token ? await AsyncStorage.removeItem("token") : null;
+        return;
+      }
+    }catch(e){
+      setRun(true);
+      console.log(e);
+    }
+  };
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  useEffect(() => {
+    if (!run) {
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 250,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [login, run]);
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <ImageBackground
+      source={chatPage}
+      style={styles.container}
+      resizeMode="cover"
+    >
+      {run ? (
+        <Image source={loading} style={{ width: 100, height: 100 }} />
+      ) : (
+        <Animated.View
+          style={{
+            height: "100%",
+            width: "100%",
+            opacity,
+          }}
+        >{isChatPage? <ChatPage setIsChatPage={setIsChatPage} user={user} setLogin={setLogin} /> : (
+          login ? (
+            <Login setLogin={setLogin} setIsChatPage={setIsChatPage} setUser={setUser} />
+          ) : (
+            <Signup setLogin={setLogin} setIsChatPage={setIsChatPage} setUser={setUser}/>
+          ))}
+        </Animated.View>
+      )}
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
+    height: "100%",
+    width: "100%",
   },
 });
