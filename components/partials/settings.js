@@ -26,7 +26,6 @@ export default function Settings({user,setIsChatPage,setLogin}) {
       >
         <Text
           style={{
-            fontFamily: "Arial",
             fontWeight: "bold",
             fontSize: 20,
           }}
@@ -55,7 +54,6 @@ const styles = new StyleSheet.create({
   fontStyles: {
     fontSize: 30,
     color: "white",
-    fontFamily: "Arial",
     fontWeight: "bold",
   },
 

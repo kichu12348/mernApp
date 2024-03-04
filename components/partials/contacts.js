@@ -97,7 +97,6 @@ const styles = new StyleSheet.create({
   fontStyles: {
     fontSize: 30,
     color: "white",
-    fontFamily: "Arial",
     fontWeight: "bold",
   },
 });

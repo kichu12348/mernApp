@@ -237,7 +237,6 @@ const styles = new StyleSheet.create({
   fontStyles: {
     fontSize: 30,
     color: "white",
-    fontFamily: "Arial",
     fontWeight: "bold",
   },
   inputStyles: {
@@ -263,13 +262,11 @@ const styles = new StyleSheet.create({
     color: "black",
     fontSize: 20,
     fontWeight: "bold",
-    fontFamily: "Arial",
   },
   span: {
     color: "white",
     fontSize: 10,
     fontWeight: "bold",
-    fontFamily: "Arial",
     marginTop: 10,
     alignItems: "center",
     justifyContent: "center",

@@ -19,7 +19,7 @@ import io from "socket.io-client";
 
 export default function Chats({chatter,user}) {
 
-  const ENDPOINT ="http://192.168.1.42:5000"
+  const ENDPOINT ="https://mernappserver-m38a.onrender.com"
   //scoket.io
   const socket = io(ENDPOINT);
 
@@ -45,7 +45,7 @@ export default function Chats({chatter,user}) {
       }
     }
 
-
+//function to send message
     const sendMessage = async () => {
       const token = await AsyncStorage.getItem("token");
       if(inputVal.trim() === "") return;
@@ -111,7 +111,7 @@ export default function Chats({chatter,user}) {
         alignItems: "center",
         flex: 1,
        }}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 140 : 0}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 140 : 60}
       >
 
      
@@ -169,7 +169,6 @@ export default function Chats({chatter,user}) {
             style={{
               width: "90%",
               maxHeight: 80,
-              fontFamily:"Arial",
               fontWeight:"bold",
               color:"white",
               marginLeft: 10,
@@ -234,7 +233,6 @@ const styles = new StyleSheet.create({
   fontStyles: {
     fontSize: 30,
     color: "white",
-    fontFamily: "Arial",
     fontWeight: "bold",
   },
   scrollViewContent: {

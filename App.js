@@ -10,7 +10,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function App() {
   //axios
-  axios.defaults.baseURL = "http://192.168.1.42:5000";
+  axios.defaults.baseURL = "https://mernappserver-m38a.onrender.com";
   axios.defaults.withCredentials = true;
   axios.defaults.headers.post["Content-Type"] = "application/json";
   axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
