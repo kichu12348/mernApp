@@ -8,31 +8,86 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
-  Keyboard,
 } from "react-native";
 import send from "../assets/send.png";
-import { useState } from "react";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useEffect, useState,useRef } from "react";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import io from "socket.io-client";
 
 
 
-export default function Chats() {
-  const test =
-    "In the heart of the bustling city, where the symphony of car horns and the rhythm of footsteps create a cacophony of urban life, there exists a vibrant tapestry of diversity and ambition. Skyscrapers soar into the sky, their glass facades reflecting the dreams and aspirations of a multitude of individuals navigating the concrete canyons below. Streets lined with cafes and boutiques beckon the curious wanderer, promising a sensory journey through the fusion of cultures and flavors. As the sun sets, the cityscape transforms into a mesmerizing display of lights, each twinkling luminescence telling a story of innovation and progress. Amidst the hustle and bustle, hidden pockets of tranquility reveal themselves—a quiet park where the rustle of leaves harmonizes with distant laughter, or a historic alleyway where time seems to stand still. This city, with its contradictions and harmonies, serves as a microcosm of human existence—a testament to the boundless possibilities and complexities that define our shared journey on this remarkable planet.";
-    const[value, setValue] = useState("")
+export default function Chats({chatter,user}) {
+
+  const ENDPOINT ="http://192.168.1.42:5000"
+  //scoket.io
+  const socket = io(ENDPOINT);
+
+  //refs
+  const scrollViewRef = useRef();
+ 
+    //state variables
     const [inputVal, setInputVal] = useState("");
-    const store = async () => {
-      try {
-        await AsyncStorage.setItem('chat', inputVal)
-        await AsyncStorage.getItem('chat').then((value) => {
-          setValue(value)
-        })
-      } catch (e) {
-        console.log(e)
-      }
+    const [messages, setMessages] = useState([]);
+    const[run,setRun] = useState(true);
 
+    //functions
+    async function getMessages(){
+      const token = await AsyncStorage.getItem("token");
+      try {
+        const response = await axios.post("/message/getMessages",{roomID:chatter.roomID,token});
+        if(response.data.ok){
+          await setMessages(response.data.data);
+          socket.emit('joinRoom',chatter.roomID);
+        }
+      } catch (error) {
+        console.error(error);
+      }
     }
-  
+
+
+    const sendMessage = async () => {
+      const token = await AsyncStorage.getItem("token");
+      if(inputVal.trim() === "") return;
+      if(inputVal[-1]=== " " || inputVal[-1] === "   ") {
+        setInputVal(inputVal.trim());
+      }
+      setInputVal("");
+      try {
+        const response = await axios.post("/message/sendMessage", {
+          from: user.username,
+          message: inputVal,
+          roomID: chatter.roomID,
+          token,
+        });
+        socket.emit('sendMessage', {
+          from: user.username,
+          message: inputVal,
+          roomID: chatter.roomID,
+        });
+        
+        if (response.data.ok) {
+          return;
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    
+    }
+    useEffect(()=>{
+      if(run){
+       getMessages(); 
+       setRun(false);
+      }
+      
+    
+    },[])
+    
+    useEffect(() => {
+      socket.on("message", (message) => {
+        setMessages((prev) => [...prev, message]);
+      });
+    });
   
   
   
@@ -41,10 +96,10 @@ export default function Chats() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Image
-          source={{ uri: "https://api.multiavatar.com/Starcrasher.png" }}
+          source={{ uri: chatter.profilePicture }}
           style={{ height: 40, width: 40, marginRight: 20 }}
         />
-        <Text style={styles.fontStyles}>Kichu</Text>
+        <Text style={styles.fontStyles}>{chatter.username}</Text>
       </View>
       <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -61,17 +116,39 @@ export default function Chats() {
 
      
       <View style={styles.messages}>
-        <ScrollView contentContainerStyle={styles.scrollViewContent}>
-          <View style={styles.messageLeft}>
+        <ScrollView 
+        contentContainerStyle={styles.scrollViewContent}
+        ref={scrollViewRef}
+        onContentSizeChange={() => scrollViewRef.current.scrollToEnd({animated: true})}
+        >
+          {/* <View style={styles.messageLeft}>
             <View style={styles.messageTextL}>
-              <Text style={styles.messageText}>{test}</Text>
+              <Text style={styles.messageText}>hi</Text>
             </View>
           </View>
           <View style={styles.messageRight}>
             <View style={styles.messageTextR}>
-              <Text style={styles.messageText}>{value}</Text>
+              <Text style={styles.messageText}>hi</Text>
             </View>
-          </View>
+          </View> */}
+          {messages?.map((message, index) => {
+            if (message.from === user.username) {
+              return (
+                <View style={styles.messageRight} key={index}>
+                  <View style={styles.messageTextR}>
+                    <Text style={styles.messageText}>{message.message}</Text>
+                  </View>
+                </View>
+              );
+            }
+            return (
+              <View style={styles.messageLeft} key={index}>
+                <View style={styles.messageTextL}>
+                  <Text style={styles.messageText}>{message.message}</Text>
+                </View>
+              </View>
+            );
+          })}
           <View 
           style={{
             height:1,
@@ -100,13 +177,13 @@ export default function Chats() {
             }}
           />
           <TouchableOpacity 
-          onPress={()=>store("hi")}
           style={{
             height: 50,
             width: 50,
             justifyContent: "center",
             alignItems: "center",
           }}
+          onPress={sendMessage}
           >
             <Image
             source={send}

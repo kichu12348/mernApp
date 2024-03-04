@@ -1,4 +1,3 @@
-
 import {
   View,
   TouchableOpacity,
@@ -10,48 +9,50 @@ import {
 } from "react-native";
 import { useState,useEffect } from "react";
 
-export default function Contacts({showChat,user}) {
+export default function Contacts({ showChat, user,contacts, setContacts, setIsRun, isRun}) {
 
 
 
-  //stateVariables
-const [contacts, setContacts] = useState([{
-  contact:{
-    username:"BOB",
-    email:"test@gmail.com",
-    profilePicture:"https://api.multiavatar.com/Starcrasher.png",
-    id:""
-  }
-}]);
-
-  const setContact =()=>{
-    if(user.contacts || user.contacts.length>0){
-      let contactList = []
-      user.contacts.map(contact=>{
+  const setContact = () => {
+    if (user.contacts || user.contacts.length > 0) {
+      let contactList = [];
+      user.contacts.filter(contact=>contact.contact?true:false).map((contact) => {
         contactList.push({
-          contact:{
-            username:contact.contact.username,
-            email:contact.contact.email,
-            profilePicture:contact.contact.profilePicture,
-            id:contact.contact.id
-          }
-        })
-      })
-      setContacts(contactList)
+          contact: {
+            username: contact.contact.username,
+            email: contact.contact.email,
+            profilePicture: contact.contact.profilePicture,
+            id: contact.contact.id,
+            roomID: contact.roomID,
+          },
+        });
+      });
+      setContacts(contactList);
     }
-  }
-  useEffect(()=>{
-    setContact()
-  },[user])
+  };
 
+  useEffect(() => {
+    if(isRun){
+      setContact();
+      setIsRun(false);
+    }
+  }, []);
+
+  
   return (
     <SafeAreaView style={styles.container}>
-     
       <View style={styles.contactList}>
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
-          {contacts.map((contact, index) => (
-            <TouchableOpacity key={index} style={styles.eachContact} onPress={showChat}>
-              <Image source={{uri:contact.contact.profilePicture}} style={{height:40, width:40,marginRight:20}}/>
+          {contacts?.map((contact, index) => (
+            <TouchableOpacity
+              key={index}
+              style={styles.eachContact}
+              onPress={()=>showChat(contact.contact)}
+            >
+              <Image
+                source={{ uri: contact.contact.profilePicture }}
+                style={{ height: 40, width: 40, marginRight: 20 }}
+              />
               <Text style={styles.contactText}>{contact.contact.username}</Text>
             </TouchableOpacity>
           ))}
@@ -99,5 +100,4 @@ const styles = new StyleSheet.create({
     fontFamily: "Arial",
     fontWeight: "bold",
   },
-    
 });

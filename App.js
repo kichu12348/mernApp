@@ -20,7 +20,7 @@ export default function App() {
   const [isChatPage, setIsChatPage] = useState(false);
   const [run, setRun] = useState(true);
   const [user, setUser] = useState({}); //{username, email, profilePicture, contacts:[{contact:{username, email, profilePicture}}]}
-
+  
   //animations
   const opacity = new Animated.Value(0);
 
@@ -30,13 +30,12 @@ export default function App() {
       setRun(false);
       return;
     }
-    try{
+    try {
       const res = await axios.post("/user/checkAuth", { token });
       if (res.data.ok) {
         setUser(res.data.data);
         setIsChatPage(true);
         setRun(false);
-        
         return;
       }
       if (!res.data.ok) {
@@ -44,7 +43,7 @@ export default function App() {
         token ? await AsyncStorage.removeItem("token") : null;
         return;
       }
-    }catch(e){
+    } catch (e) {
       setRun(true);
       console.log(e);
     }
@@ -79,12 +78,26 @@ export default function App() {
             width: "100%",
             opacity,
           }}
-        >{isChatPage? <ChatPage setIsChatPage={setIsChatPage} user={user} setLogin={setLogin} /> : (
-          login ? (
-            <Login setLogin={setLogin} setIsChatPage={setIsChatPage} setUser={setUser} />
+        >
+          {isChatPage ? (
+            <ChatPage
+              setIsChatPage={setIsChatPage}
+              user={user}
+              setLogin={setLogin}
+            />
+          ) : login ? (
+            <Login
+              setLogin={setLogin}
+              setIsChatPage={setIsChatPage}
+              setUser={setUser}
+            />
           ) : (
-            <Signup setLogin={setLogin} setIsChatPage={setIsChatPage} setUser={setUser}/>
-          ))}
+            <Signup
+              setLogin={setLogin}
+              setIsChatPage={setIsChatPage}
+              setUser={setUser}
+            />
+          )}
         </Animated.View>
       )}
     </ImageBackground>

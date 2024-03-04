@@ -17,27 +17,41 @@ import search from "./assets/search.png";
 import settings from "./assets/settings.png";
 import { useState, useEffect } from "react";
 
-export default function ChatPage({setIsChatPage,user,setLogin}) {
+export default function ChatPage({ setIsChatPage, user, setLogin}) {
   //stateVariables
   const [isContacts, setIsContacts] = useState(true);
   const [isChat, setIsChat] = useState(false);
   const [isSearch, setIsSearch] = useState(false);
   const [isSettings, setIsSettings] = useState(false);
-  const[showNavBar, setShowNavBar] = useState("flex")
+  const [showNavBar, setShowNavBar] = useState("flex");
+  const [chatter, setChatter] = useState({}); //{username, email, profilePicture, id, roomID}
+  const [isRun, setIsRun] = useState(true);
+  const [contacts, setContacts] = useState([
+    {
+      contact: {
+        username: "BOB",
+        email: "test@gmail.com",
+        profilePicture: "https://api.multiavatar.com/Starcrasher.png",
+        id: "",
+      },
+    },
+  ]);
 
   //renderFuntions
   const navBar = () => {
     return (
-      <View style={{
-        height: "10%",
-        width: "100%",
-        backgroundColor: "transparent",
-        flex: 1,
-        flexDirection: "row",
-        justifyContent: "space-evenly",
-        alignItems: "flex-end",
-        display: showNavBar,
-      }}>
+      <View
+        style={{
+          height: "10%",
+          width: "100%",
+          backgroundColor: "transparent",
+          flex: 1,
+          flexDirection: "row",
+          justifyContent: "space-evenly",
+          alignItems: "flex-end",
+          display: showNavBar,
+        }}
+      >
         <TouchableOpacity onPress={showContacts}>
           <Image source={chat} style={{ width: 40, height: 40 }} />
         </TouchableOpacity>
@@ -45,7 +59,7 @@ export default function ChatPage({setIsChatPage,user,setLogin}) {
           <Image source={search} style={{ width: 40, height: 40 }} />
         </TouchableOpacity>
         <Image
-          source={{ uri: user.profilePicture}}
+          source={{ uri: user.profilePicture }}
           style={{ height: 40, width: 40, marginRight: 20 }}
         />
         <TouchableOpacity onPress={showSettings}>
@@ -67,25 +81,25 @@ export default function ChatPage({setIsChatPage,user,setLogin}) {
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
-      'keyboardDidShow',
+      "keyboardDidShow",
       () => {
-        setShowNavBar('none');
+        setShowNavBar("none");
       }
     );
-  
+
     const keyboardDidHideListener = Keyboard.addListener(
-      'keyboardDidHide',
+      "keyboardDidHide",
       () => {
-        setShowNavBar('flex');
+        setShowNavBar("flex");
       }
     );
-  
+
     // Cleanup listeners when component unmounts
     return () => {
       keyboardDidShowListener.remove();
       keyboardDidHideListener.remove();
     };
-  },[]);
+  }, []);
 
   //functions
 
@@ -96,9 +110,12 @@ export default function ChatPage({setIsChatPage,user,setLogin}) {
     setIsSettings(false);
   };
 
-
-
-  const showChat = () => {
+  const showChat = (contact) => {
+    setChatter({
+      roomID: contact.roomID,
+      username: contact.username,
+      profilePicture: contact.profilePicture,
+    });
     setIsContacts(false);
     setIsChat(true);
     setIsSearch(false);
@@ -130,14 +147,33 @@ export default function ChatPage({setIsChatPage,user,setLogin}) {
           }}
         >
           {isContacts ? (
-            <Contacts showChat={showChat} user={user} />
+            <Contacts 
+            showChat={showChat} 
+            user={user} 
+            contacts={contacts}
+            setContacts={setContacts}
+            isRun={isRun}
+            setIsRun={setIsRun}
+            />
           ) : isSearch ? (
-            <SearchQuery setIsContacts={setIsContacts} user={user}/>
+            <SearchQuery 
+            showContacts={showContacts}
+            user={user} 
+            contacts={contacts}
+            setContacts={setContacts}
+            />
           ) : isSettings ? (
-            <Settings user={user} setIsChatPage={setIsChatPage} setLogin={setLogin} />
-          ) : (
-            isChat? <Chats /> : null
-          )}
+            <Settings
+              user={user}
+              setIsChatPage={setIsChatPage}
+              setLogin={setLogin}
+            />
+          ) : isChat ? (
+            <Chats 
+            chatter={chatter}
+            user={user}
+            />
+          ) : null}
         </Animated.View>
       </View>
 
@@ -163,5 +199,5 @@ const styles = new StyleSheet.create({
     height: "90%",
     width: "100%",
     backgroundColor: "transparent",
-  }
+  },
 });

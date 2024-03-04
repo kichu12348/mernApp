@@ -14,7 +14,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
-export default function SearchQuery({user,setIsContacts}) {
+export default function SearchQuery({user,showContacts ,setContacts,contacts}) {
 
 
     const colorScheme = useColorScheme();
@@ -41,7 +41,7 @@ export default function SearchQuery({user,setIsContacts}) {
             response.data.data.filter(data=>data.username!==user.username)
             .map(user=>{
               searchResults.push({
-                id:user.id,
+                id:user._id,
                 username:user.username,
                 profilePicture:user.profilePicture
               })
@@ -56,12 +56,30 @@ export default function SearchQuery({user,setIsContacts}) {
     
   }
 
+
+
+
   async function addContact(contactID){
     const token = await AsyncStorage.getItem("token");
     try {
       const response = await axios.post('/user/addContact',{token,contactID});
       if(response.data.ok){
-        console.log(response.data.contacts);
+        let contactList = []
+      await response.data.contacts.filter(contact=>contact.contact?true:false)
+       .map((contact) => {
+         contactList.push({
+            contact: {
+              username: contact.contact.username,
+              email: contact.contact.email,
+              profilePicture: contact.contact.profilePicture,
+              id: contact.contact.id,
+              roomID: contact.roomID,
+            },
+          });
+       })
+        await setContacts(contactList);
+        console.log(contacts);
+        showContacts();
       }
     } catch (error) {
         console.error(error);
