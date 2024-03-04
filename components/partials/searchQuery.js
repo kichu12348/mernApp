@@ -78,7 +78,6 @@ export default function SearchQuery({user,showContacts ,setContacts,contacts}) {
           });
        })
         await setContacts(contactList);
-        console.log(contacts);
         showContacts();
       }
     } catch (error) {
