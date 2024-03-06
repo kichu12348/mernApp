@@ -33,7 +33,7 @@ export default function App() {
     try {
       const res = await axios.post("/user/checkAuth", { token });
       if (res.data.ok) {
-        setUser(res.data.data);
+       await setUser(res.data.data);
         setIsChatPage(true);
         setRun(false);
         return;

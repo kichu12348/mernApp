@@ -14,7 +14,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
-export default function SearchQuery({user,showContacts ,setContacts,contacts}) {
+export default function SearchQuery({user,showContacts ,setContacts}) {
 
 
     const colorScheme = useColorScheme();
@@ -48,6 +48,7 @@ export default function SearchQuery({user,showContacts ,setContacts,contacts}) {
             })
             setSearchResults(searchResults)
           }
+         
         } catch (error) {
             console.error(error);
             setSearchResults([
@@ -78,6 +79,10 @@ export default function SearchQuery({user,showContacts ,setContacts,contacts}) {
           });
        })
         await setContacts(contactList);
+        showContacts();
+      }
+
+      if(!response.data.ok){
         showContacts();
       }
     } catch (error) {

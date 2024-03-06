@@ -111,7 +111,7 @@ export default function Chats({chatter,user}) {
         alignItems: "center",
         flex: 1,
        }}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 140 : 60}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 150 : 100}
       >
 
      
@@ -121,16 +121,6 @@ export default function Chats({chatter,user}) {
         ref={scrollViewRef}
         onContentSizeChange={() => scrollViewRef.current.scrollToEnd({animated: true})}
         >
-          {/* <View style={styles.messageLeft}>
-            <View style={styles.messageTextL}>
-              <Text style={styles.messageText}>hi</Text>
-            </View>
-          </View>
-          <View style={styles.messageRight}>
-            <View style={styles.messageTextR}>
-              <Text style={styles.messageText}>hi</Text>
-            </View>
-          </View> */}
           {messages?.map((message, index) => {
             if (message.from === user.username) {
               return (

@@ -37,6 +37,34 @@ export default function ChatPage({ setIsChatPage, user, setLogin}) {
     },
   ]);
 
+  const setContact =  () => {
+    if (user.contacts || user.contacts.length > 0) {
+      let contactList = [];
+       user.contacts.filter(contact=>contact.contact?true:false).map((contact) => {
+        contactList.push({
+          contact: {
+            username: contact.contact.username,
+            email: contact.contact.email,
+            profilePicture: contact.contact.profilePicture,
+            id: contact.contact.id,
+            roomID: contact.roomID,
+          },
+        });
+      });
+      setContacts(contactList);
+      
+    }
+  };
+
+  useEffect(() => {
+    if(isRun){
+      window.setTimeout(()=>{
+        setContact();
+        setIsRun(false);
+      },50)
+    }
+  });
+
   //renderFuntions
   const navBar = () => {
     return (
