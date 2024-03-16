@@ -17,7 +17,7 @@ import io from "socket.io-client";
 import { encrypt, decrypt, getCred } from "../../cryptic/ee2e";
 
 export default function Chats({ chatter, user }) {
-  const ENDPOINT = "http://192.168.1.37:5000";
+  const ENDPOINT = "https://mernappserver-m38a.onrender.com";
   //socket.io
   const socket = io(ENDPOINT);
 
@@ -73,6 +73,13 @@ export default function Chats({ chatter, user }) {
     if (key) {
       setPrivateKey(key);
       return;
+    } else {
+      const key = await AsyncStorage.getItem("privateKey");
+      if (key) {
+        setPrivateKey(key);
+        return;
+      }
+      return;
     }
   }
 
@@ -84,7 +91,7 @@ export default function Chats({ chatter, user }) {
         roomID: chatter.roomID,
         token,
       });
-      
+
       if (response.data.ok) {
         const decryptedMessages = response.data.data.map((message) => ({
           message: decryptMessage(

@@ -11,13 +11,11 @@
       "resizeMode": "cover",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.kichu12348.quiply",
-      "config":{
+      "config": {
         "usesNonExemptEncryption": false
       }
     },
@@ -26,7 +24,10 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.kichu12348.quiply"
+      "package": "com.kichu12348.quiply",
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -41,7 +42,7 @@
       [
         "expo-updates",
         {
-          "username": "account-username"
+          "username": "kichu12348"
         }
       ]
     ]

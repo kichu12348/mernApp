@@ -13,7 +13,7 @@ import {
 import { useState } from "react";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {generateKeys,saveCred} from "../cryptic/ee2e";
+import { generateKeys, saveCred } from "../cryptic/ee2e";
 
 export default function Signup({ setLogin, setUser, setIsChatPage }) {
   const colorScheme = useColorScheme();
@@ -105,12 +105,12 @@ export default function Signup({ setLogin, setUser, setIsChatPage }) {
     }
 
     try {
-      const {privateKey, publicKey} = await generateKeys();
+      const { privateKey, publicKey } = await generateKeys();
       const res = await axios.post("/user/signup", {
         email,
         password,
         username,
-        publicKey
+        publicKey,
       });
       if (res.data.ok) {
         await AsyncStorage.setItem("token", res.data.token);
@@ -119,9 +119,10 @@ export default function Signup({ setLogin, setUser, setIsChatPage }) {
         setEmail("");
         setPassword("");
         setUsername("");
-        
-        await saveCred(username,privateKey);
-        await AsyncStorage.setItem("publicKey",publicKey);
+
+        await saveCred(username, privateKey);
+        await AsyncStorage.setItem("publicKey", publicKey);
+        await AsyncStorage.setItem("privateKey", privateKey);
         return;
       }
       if (!res.data.ok) {

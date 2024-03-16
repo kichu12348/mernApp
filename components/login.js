@@ -8,14 +8,14 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
-  useColorScheme
+  useColorScheme,
 } from "react-native";
 import { useState } from "react";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getCred } from "../cryptic/ee2e";
 
-export default function Login({ setLogin,setUser,setIsChatPage}) {
-
+export default function Login({ setLogin, setUser, setIsChatPage }) {
   const colorScheme = useColorScheme();
 
   //state variables
@@ -85,15 +85,19 @@ export default function Login({ setLogin,setUser,setIsChatPage}) {
       }, 3000);
       return;
     }
-    try{
-      const res = await axios.post("/user/login", { email, password })
+    try {
+      const res = await axios.post("/user/login", { email, password });
       if (res.data.ok) {
         await AsyncStorage.setItem("token", res.data.token);
         await AsyncStorage.setItem("publicKey", res.data.user.publicKey);
+        const privateKey = await getCred(res.data.user.username);
+        if (privateKey) {
+          await AsyncStorage.setItem("privateKey", privateKey);
+        }
         await setUser(res.data.user);
         setIsChatPage(true);
       }
-      if(!res.data.ok){
+      if (!res.data.ok) {
         setSpan(res.data.message);
         setFont({
           style: "none",
@@ -109,16 +113,14 @@ export default function Login({ setLogin,setUser,setIsChatPage}) {
           setBool(true);
         }, 3000);
       }
-    }
-    catch(err){
+    } catch (err) {
       console.log(err);
     }
-    
   };
 
   const goToSignup = () => {
-    if(bool)setLogin(false);
-  }
+    if (bool) setLogin(false);
+  };
 
   return (
     <TouchableWithoutFeedback
@@ -126,63 +128,58 @@ export default function Login({ setLogin,setUser,setIsChatPage}) {
       onPress={dontDisplayKeyboard}
     >
       <View style={styles.container} resizeMode="cover">
-        <KeyboardAvoidingView behavior={
-          Platform.OS === "ios" ? "padding" : "height"
-        } style={{
-          height: "100%",
-          width: "100%",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-        keyboardVerticalOffset={Platform.OS === "ios" ? -300 : 20}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={{
+            height: "100%",
+            width: "100%",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          keyboardVerticalOffset={Platform.OS === "ios" ? -300 : 20}
         >
+          <TextInput
+            placeholder="Email"
+            placeholderTextColor="white"
+            style={styles.inputStyles}
+            keyboardAppearance={colorScheme === "dark" ? "dark" : "light"}
+            value={email}
+            onChangeText={(text) => setEmail(text.toLocaleLowerCase())}
+          />
+          <TextInput
+            placeholder="Password"
+            placeholderTextColor="white"
+            style={styles.inputStyles}
+            keyboardAppearance={colorScheme === "dark" ? "dark" : "light"}
+            value={password}
+            onChangeText={(text) => setPassword(text)}
+          />
+          <TouchableOpacity style={styles.span} onPress={goToSignup}>
+            <Text
+              style={{
+                color: `${font.message}`,
+                fontSize: 15,
+                fontWeight: "bold",
+              }}
+            >
+              {span}
+            </Text>
+            <Text
+              style={{
+                color: "#9171f8",
+                fontSize: 15,
+                fontWeight: "bold",
+                display: `${font.style}`,
+              }}
+            >
+              {" "}
+              Sign Up
+            </Text>
+          </TouchableOpacity>
 
-        
-        <TextInput
-          placeholder="Email"
-          placeholderTextColor="white"
-          style={styles.inputStyles}
-          keyboardAppearance={colorScheme==="dark"?"dark":"light"}
-          value={email}
-          onChangeText={(text) => setEmail(text.toLocaleLowerCase())}
-        />
-        <TextInput
-          placeholder="Password"
-          placeholderTextColor="white"
-          style={styles.inputStyles}
-          keyboardAppearance={colorScheme==="dark"?"dark":"light"}
-          value={password}
-          onChangeText={(text) => setPassword(text)}
-        />
-        <TouchableOpacity 
-        style={styles.span}
-        onPress={goToSignup}
-        >
-          <Text
-            style={{
-              color: `${font.message}`,
-              fontSize: 15,
-              fontWeight: "bold",
-            }}
-          >
-            {span}
-          </Text>
-          <Text
-            style={{
-              color: "#9171f8",
-              fontSize: 15,
-              fontWeight: "bold",
-              display: `${font.style}`,
-            }}
-          >
-            {" "}
-            Sign Up
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.loginBtn} onPress={() => submit()}>
-          <Text style={styles.loginBtnText}>Login</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.loginBtn} onPress={() => submit()}>
+            <Text style={styles.loginBtnText}>Login</Text>
+          </TouchableOpacity>
         </KeyboardAvoidingView>
       </View>
     </TouchableWithoutFeedback>
