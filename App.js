@@ -7,7 +7,6 @@ import ChatPage from "./components/chatPage";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getCred } from "./cryptic/ee2e";
 
 export default function App() {
   //axios
@@ -36,11 +35,6 @@ export default function App() {
       if (res.data.ok) {
         setUser(res.data.data);
         await AsyncStorage.setItem("publicKey", res.data.data.publicKey);
-        const privateKey = await getCred(res.data.data.username);
-        if (privateKey) {
-          await AsyncStorage.setItem("privateKey", privateKey);
-        }
-        
         setIsChatPage(true);
         setRun(false);
         return;

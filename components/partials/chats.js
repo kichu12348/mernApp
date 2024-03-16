@@ -69,7 +69,7 @@ export default function Chats({ chatter, user }) {
 
   //function to get private key
   async function getPrivateKey() {
-    const key = await AsyncStorage.getItem("privateKey");
+    const key = await getCred(user.username);
     if (key) {
       setPrivateKey(key);
       return;

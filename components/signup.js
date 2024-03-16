@@ -122,7 +122,6 @@ export default function Signup({ setLogin, setUser, setIsChatPage }) {
         
         await saveCred(username,privateKey);
         await AsyncStorage.setItem("publicKey",publicKey);
-        await AsyncStorage.setItem("privateKey",privateKey);
         return;
       }
       if (!res.data.ok) {
