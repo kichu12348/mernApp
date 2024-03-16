@@ -13,6 +13,7 @@ import {
 import { useState } from "react";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import {getCred} from "../cryptic/ee2e";
 
 export default function Login({ setLogin,setUser,setIsChatPage}) {
 
@@ -89,6 +90,11 @@ export default function Login({ setLogin,setUser,setIsChatPage}) {
       const res = await axios.post("/user/login", { email, password })
       if (res.data.ok) {
         await AsyncStorage.setItem("token", res.data.token);
+        await AsyncStorage.setItem("publicKey", res.data.user.publicKey);
+        const privateKey = await getCred(res.data.user.username);
+        if (privateKey) {
+          await AsyncStorage.setItem("privateKey", privateKey);
+        }
         await setUser(res.data.user);
         setIsChatPage(true);
       }

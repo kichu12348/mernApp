@@ -7,90 +7,81 @@ import {
   TouchableOpacity,
   SafeAreaView,
   Image,
-  useColorScheme
+  useColorScheme,
 } from "react-native";
 import { useState } from "react";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-
-export default function SearchQuery({user,showContacts ,setContacts}) {
-
-
-    const colorScheme = useColorScheme();
+export default function SearchQuery({ user, showContacts, setContacts }) {
+  const colorScheme = useColorScheme();
   //state variables
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
 
-  
-
-  async function search(text) { 
+  async function search(text) {
     setSearchQuery(text);
     const token = await AsyncStorage.getItem("token");
-    if(searchQuery===""){
-
-      setSearchResults([])
+    if (searchQuery === "") {
+      setSearchResults([]);
       return;
+    }
+
+    try {
+      const response = await axios.post("/user/search", { token, searchQuery });
+      if (response.data.ok) {
+        let searchResults = [];
+        response.data.data
+          .filter((data) => data.username !== user.username)
+          .map((user) => {
+            searchResults.push({
+              id: user._id,
+              username: user.username,
+              profilePicture: user.profilePicture,
+            });
+          });
+        setSearchResults(searchResults);
+      }
+    } catch (error) {
+      console.error(error);
+      setSearchResults([]);
+    }
   }
 
-   
-        try {
-          const response = await axios.post('/user/search',{token,searchQuery});
-          if(response.data.ok){
-            let searchResults = []
-            response.data.data.filter(data=>data.username!==user.username)
-            .map(user=>{
-              searchResults.push({
-                id:user._id,
-                username:user.username,
-                profilePicture:user.profilePicture
-              })
-            })
-            setSearchResults(searchResults)
-          }
-         
-        } catch (error) {
-            console.error(error);
-            setSearchResults([
-            ])
-        }
-    
-  }
-
-
-
-
-  async function addContact(contactID){
+  async function addContact(contactID) {
     const token = await AsyncStorage.getItem("token");
     try {
-      const response = await axios.post('/user/addContact',{token,contactID});
-      if(response.data.ok){
-        let contactList = []
-      await response.data.contacts.filter(contact=>contact.contact?true:false)
-       .map((contact) => {
-         contactList.push({
-            contact: {
-              username: contact.contact.username,
-              email: contact.contact.email,
-              profilePicture: contact.contact.profilePicture,
-              id: contact.contact.id,
-              roomID: contact.roomID,
-            },
+      const response = await axios.post("/user/addContact", {
+        token,
+        contactID,
+      });
+      if (response.data.ok) {
+        let contactList = [];
+        await response.data.contacts
+          .filter((contact) => (contact.contact ? true : false))
+          .map((contact) => {
+            contactList.push({
+              contact: {
+                username: contact.contact.username,
+                email: contact.contact.email,
+                profilePicture: contact.contact.profilePicture,
+                id: contact.contact.id,
+                roomID: contact.roomID,
+                publicKey: contact.contact.publicKey,
+              },
+            });
           });
-       })
         await setContacts(contactList);
         showContacts();
       }
 
-      if(!response.data.ok){
+      if (!response.data.ok) {
         showContacts();
       }
     } catch (error) {
-        console.error(error);
+      console.error(error);
     }
   }
-
-
 
   return (
     <SafeAreaView style={styles.container}>
@@ -98,20 +89,19 @@ export default function SearchQuery({user,showContacts ,setContacts}) {
         style={styles.input}
         placeholder="Search"
         placeholderTextColor={"white"}
-        keyboardAppearance={colorScheme === "dark" ? "dark" : "light"} 
+        keyboardAppearance={colorScheme === "dark" ? "dark" : "light"}
         value={searchQuery}
         onChangeText={(text) => {
-            search(text);
+          search(text);
         }}
-       
       />
       <View style={styles.searchQueryListContainer}>
         <ScrollView contentContainerStyle={styles.searchQueryList}>
           {searchResults?.map((contact, index) => (
-            <TouchableOpacity 
-            key={index} 
-            style={styles.eachContact}
-            onPress={()=>addContact(contact.id)}
+            <TouchableOpacity
+              key={index}
+              style={styles.eachContact}
+              onPress={() => addContact(contact.id)}
             >
               <Image
                 source={{ uri: contact.profilePicture }}

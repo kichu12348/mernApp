@@ -10,7 +10,7 @@ import {
 
 
 export default function Contacts({ showChat,contacts}) {
-
+ 
   
   return (
     <SafeAreaView style={styles.container}>

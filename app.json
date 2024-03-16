@@ -16,7 +16,10 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.kichu12348.quiply"
+      "bundleIdentifier": "com.kichu12348.quiply",
+      "config":{
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -32,6 +35,15 @@
       "eas": {
         "projectId": "16627948-5b49-452f-a6f2-5ebf2015b012"
       }
-    }
+    },
+    "plugins": [
+      "expo-secure-store",
+      [
+        "expo-updates",
+        {
+          "username": "account-username"
+        }
+      ]
+    ]
   }
 }

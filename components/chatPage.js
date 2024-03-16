@@ -17,9 +17,11 @@ import search from "./assets/search.png";
 import settings from "./assets/settings.png";
 import { useState, useEffect } from "react";
 
+
 export default function ChatPage({ setIsChatPage, user, setLogin}) {
   //stateVariables
   const [isContacts, setIsContacts] = useState(true);
+    const[rick,setRick]=useState(true);
   const [isChat, setIsChat] = useState(false);
   const [isSearch, setIsSearch] = useState(false);
   const [isSettings, setIsSettings] = useState(false);
@@ -48,6 +50,7 @@ export default function ChatPage({ setIsChatPage, user, setLogin}) {
             profilePicture: contact.contact.profilePicture,
             id: contact.contact.id,
             roomID: contact.roomID,
+            publicKey: contact.contact.publicKey,
           },
         });
       });
@@ -86,10 +89,15 @@ export default function ChatPage({ setIsChatPage, user, setLogin}) {
         <TouchableOpacity onPress={showSearch}>
           <Image source={search} style={{ width: 40, height: 40 }} />
         </TouchableOpacity>
-        <Image
+        <TouchableOpacity
+        >
+          <Image
           source={{ uri: user.profilePicture }}
           style={{ height: 40, width: 40, marginRight: 20 }}
+          
         />
+        </TouchableOpacity>
+        
         <TouchableOpacity onPress={showSettings}>
           <Image source={settings} style={{ width: 40, height: 40 }} />
         </TouchableOpacity>
@@ -143,6 +151,7 @@ export default function ChatPage({ setIsChatPage, user, setLogin}) {
       roomID: contact.roomID,
       username: contact.username,
       profilePicture: contact.profilePicture,
+      publicKey: contact.publicKey,
     });
     setIsContacts(false);
     setIsChat(true);
@@ -163,6 +172,10 @@ export default function ChatPage({ setIsChatPage, user, setLogin}) {
     setIsSearch(false);
     setIsSettings(true);
   };
+
+
+
+  
 
   return (
     <SafeAreaView style={styles.container}>

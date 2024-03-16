@@ -7,10 +7,11 @@ import ChatPage from "./components/chatPage";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getCred } from "./cryptic/ee2e";
 
 export default function App() {
   //axios
-  axios.defaults.baseURL = "https://mernappserver-m38a.onrender.com";
+  axios.defaults.baseURL = "http://192.168.1.37:5000";
   axios.defaults.withCredentials = true;
   axios.defaults.headers.post["Content-Type"] = "application/json";
   axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
@@ -33,7 +34,13 @@ export default function App() {
     try {
       const res = await axios.post("/user/checkAuth", { token });
       if (res.data.ok) {
-       await setUser(res.data.data);
+        setUser(res.data.data);
+        await AsyncStorage.setItem("publicKey", res.data.data.publicKey);
+        const privateKey = await getCred(res.data.data.username);
+        if (privateKey) {
+          await AsyncStorage.setItem("privateKey", privateKey);
+        }
+        
         setIsChatPage(true);
         setRun(false);
         return;
@@ -62,6 +69,7 @@ export default function App() {
       }).start();
     }
   }, [login, run]);
+
 
   return (
     <ImageBackground

@@ -8,16 +8,15 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
-  useColorScheme
+  useColorScheme,
 } from "react-native";
 import { useState } from "react";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import {generateKeys,saveCred} from "../cryptic/ee2e";
 
-export default function Signup({ setLogin,setUser,setIsChatPage}) {
-
+export default function Signup({ setLogin, setUser, setIsChatPage }) {
   const colorScheme = useColorScheme();
-
 
   //state variables
   const [email, setEmail] = useState("");
@@ -36,8 +35,6 @@ export default function Signup({ setLogin,setUser,setIsChatPage}) {
 
   //submit function
   const submit = async () => {
-
-
     if (email === "" || password === "" || username === "") {
       setSpan("Please fill all fields");
       setFont({
@@ -89,62 +86,70 @@ export default function Signup({ setLogin,setUser,setIsChatPage}) {
       }, 3000);
       return;
     }
-    if(username.length<5){
-        setSpan("5 characters minimum for username");
+    if (username.length < 5) {
+      setSpan("5 characters minimum for username");
+      setFont({
+        style: "none",
+        message: "red",
+      });
+      setBool(false);
+      window.setTimeout(() => {
+        setSpan("Already a user?");
         setFont({
-            style: "none",
-            message: "red",
+          style: "flex",
+          message: "white",
+        });
+        setBool(true);
+      }, 3000);
+      return;
+    }
+
+    try {
+      const {privateKey, publicKey} = await generateKeys();
+      const res = await axios.post("/user/signup", {
+        email,
+        password,
+        username,
+        publicKey
+      });
+      if (res.data.ok) {
+        await AsyncStorage.setItem("token", res.data.token);
+        setUser(res.data.user);
+        setIsChatPage(true);
+        setEmail("");
+        setPassword("");
+        setUsername("");
+        
+        await saveCred(username,privateKey);
+        await AsyncStorage.setItem("publicKey",publicKey);
+        await AsyncStorage.setItem("privateKey",privateKey);
+        return;
+      }
+      if (!res.data.ok) {
+        setSpan(res.data.message);
+        setFont({
+          style: "none",
+          message: "red",
         });
         setBool(false);
         window.setTimeout(() => {
-            setSpan("Already a user?");
-            setFont({
+          setSpan("Already a user?");
+          setFont({
             style: "flex",
             message: "white",
-            });
-            setBool(true);
+          });
+          setBool(true);
         }, 3000);
         return;
+      }
+    } catch (e) {
+      console.log(e);
     }
-
-    try{
-        const res = await axios.post("/user/signup", { email, password, username });
-        if (res.data.ok) {
-            await AsyncStorage.setItem("token", res.data.token);
-            setUser(res.data.user);
-            setIsChatPage(true);
-            setEmail("");
-            setPassword("");
-            setUsername("");
-            return;
-        }
-        if(!res.data.ok){
-            setSpan(res.data.message);
-            setFont({
-                style: "none",
-                message: "red",
-            });
-            setBool(false);
-            window.setTimeout(() => {
-                setSpan("Already a user?");
-                setFont({
-                style: "flex",
-                message: "white",
-                });
-                setBool(true);
-            }, 3000); 
-            return;
-        }
-    }catch(e){
-        console.log(e);
-    }
-
   };
 
   const goToLogin = () => {
     if (bool) setLogin(true);
-    
-  }
+  };
 
   return (
     <TouchableWithoutFeedback
@@ -152,73 +157,68 @@ export default function Signup({ setLogin,setUser,setIsChatPage}) {
       onPress={dontDisplayKeyboard}
     >
       <View style={styles.container} resizeMode="cover">
-        <KeyboardAvoidingView 
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={{
             flex: 1,
             backgroundColor: "transparent",
             alignItems: "center",
             justifyContent: "center",
             height: "100%",
             width: "100%",
-        }}
-        keyboardVerticalOffset={Platform.OS === "ios" ? -300 : 20}
+          }}
+          keyboardVerticalOffset={Platform.OS === "ios" ? -300 : 20}
         >
+          <TextInput
+            placeholder="Username"
+            placeholderTextColor="white"
+            style={styles.inputStyles}
+            keyboardAppearance={colorScheme === "dark" ? "dark" : "light"}
+            value={username}
+            onChangeText={(text) => setUsername(text)}
+          />
+          <TextInput
+            placeholder="Email"
+            placeholderTextColor="white"
+            style={styles.inputStyles}
+            keyboardAppearance={colorScheme === "dark" ? "dark" : "light"}
+            value={email}
+            onChangeText={(text) => setEmail(text.toLocaleLowerCase())}
+          />
+          <TextInput
+            placeholder="Password"
+            placeholderTextColor="white"
+            style={styles.inputStyles}
+            keyboardAppearance={colorScheme === "dark" ? "dark" : "light"}
+            value={password}
+            onChangeText={(text) => setPassword(text)}
+          />
+          <TouchableOpacity style={styles.span} onPress={goToLogin}>
+            <Text
+              style={{
+                color: `${font.message}`,
+                fontSize: 15,
+                fontWeight: "bold",
+              }}
+            >
+              {span}
+            </Text>
+            <Text
+              style={{
+                color: "#9171f8",
+                fontSize: 15,
+                fontWeight: "bold",
+                display: `${font.style}`,
+              }}
+            >
+              {" "}
+              Login
+            </Text>
+          </TouchableOpacity>
 
-        
-        <TextInput
-          placeholder="Username"
-          placeholderTextColor="white"
-          style={styles.inputStyles}
-          keyboardAppearance={colorScheme==="dark"?"dark":"light"}
-          value={username}
-          onChangeText={(text) => setUsername(text)}
-        />
-        <TextInput
-          placeholder="Email"
-          placeholderTextColor="white"
-          style={styles.inputStyles}
-          keyboardAppearance={colorScheme==="dark"?"dark":"light"}
-          value={email}
-          onChangeText={(text) => setEmail(text.toLocaleLowerCase())}
-        />
-        <TextInput
-          placeholder="Password"
-          placeholderTextColor="white"
-          style={styles.inputStyles}
-          keyboardAppearance={colorScheme==="dark"?"dark":"light"}
-          value={password}
-          onChangeText={(text) => setPassword(text)}
-        />
-        <TouchableOpacity 
-        style={styles.span}
-        onPress={goToLogin}
-        >
-          <Text
-            style={{
-              color: `${font.message}`,
-              fontSize: 15,
-              fontWeight: "bold",
-            }}
-          >
-            {span}
-          </Text>
-          <Text
-            style={{
-              color: "#9171f8",
-              fontSize: 15,
-              fontWeight: "bold",
-              display: `${font.style}`,
-            }}
-          >
-            {" "}
-            Login
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.signupBtn} onPress={() => submit()}>
-          <Text style={styles.signupBtnText}>Signup</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.signupBtn} onPress={() => submit()}>
+            <Text style={styles.signupBtnText}>Signup</Text>
+          </TouchableOpacity>
         </KeyboardAvoidingView>
       </View>
     </TouchableWithoutFeedback>
